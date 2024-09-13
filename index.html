@@ -6,17 +6,57 @@
     <title>Search in PDF</title>
     <!-- Sử dụng CDN để tải pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.min.js"></script>
+    <style>
+        /* Thêm kiểu cho loading spinner */
+        .spinner {
+            display: none;
+            border: 4px solid rgba(0, 0, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid blue;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loadingText {
+            display: none;
+            text-align: center;
+            font-size: 16px;
+            color: blue;
+        }
+
+        #results {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>Search in PDF</h1>
     <input type="text" id="searchTerm" placeholder="Enter search term">
     <button onclick="searchPDF()">Search</button>
+    
+    <!-- Hiệu ứng loading -->
+    <div id="loading" class="spinner"></div>
+    <p id="loadingText">Searching, please wait...</p>
+    
+    <!-- Kết quả tìm kiếm -->
     <div id="results"></div>
 
     <script>
-        const pdfPath = '/a.pdf'; // Đường dẫn tới file a.pdf
+        const pdfPath = './a.pdf'; // Đường dẫn tới file a.pdf
 
         async function searchPDF() {
+            // Hiển thị spinner và thông báo đang tìm kiếm
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('loadingText').style.display = 'block';
+            document.getElementById('results').innerHTML = ''; // Xóa kết quả cũ
+
             const searchTerm = document.getElementById('searchTerm').value.toLowerCase();
             const loadingTask = pdfjsLib.getDocument(pdfPath);
             const pdf = await loadingTask.promise;
@@ -32,6 +72,11 @@
                 }
             }
 
+            // Ẩn spinner và thông báo sau khi tìm kiếm hoàn tất
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('loadingText').style.display = 'none';
+
+            // Hiển thị kết quả tìm kiếm
             document.getElementById('results').innerHTML = results || '<p>No results found</p>';
         }
     </script>
