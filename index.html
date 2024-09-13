@@ -28,13 +28,13 @@
         var pdfDoc = null;
         var isFileLoaded = false;  // Kiểm tra file PDF có được tải hay chưa
 
-        // Tự động tải file a.pdf
+        // Tự động lấy nội dung từ file a.pdf
         window.onload = function() {
             var url = './a.pdf';  // Đường dẫn tới file a.pdf (trong cùng thư mục với file HTML)
             pdfjsLib.getDocument(url).promise.then(function(pdf) {
                 pdfDoc = pdf;
                 isFileLoaded = true;  // Đánh dấu file đã được tải
-                alert("Tải file PDF 'a.pdf' thành công. Bạn có thể bắt đầu tìm kiếm.");
+                alert("Đã tải thành công file 'a.pdf'. Bạn có thể tìm kiếm từ khóa.");
             }).catch(function(error) {
                 alert("Không thể tải file PDF: " + error.message);
             });
