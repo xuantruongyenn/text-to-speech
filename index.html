@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search in PDF</title>
+    <title>Exact Phrase Search in PDF</title>
     <!-- Sử dụng CDN để tải pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.min.js"></script>
     <style>
@@ -37,7 +37,7 @@
     </style>
 </head>
 <body>
-    <h1>Search in PDF</h1>
+    <h1>Exact Phrase Search in PDF</h1>
     <input type="text" id="searchTerm" placeholder="Enter search term">
     <button onclick="searchPDF()">Search</button>
     
@@ -57,7 +57,7 @@
             document.getElementById('loadingText').style.display = 'block';
             document.getElementById('results').innerHTML = ''; // Xóa kết quả cũ
 
-            const searchTerm = document.getElementById('searchTerm').value.toLowerCase();
+            const searchTerm = document.getElementById('searchTerm').value.trim(); // Giữ nguyên chữ hoa chữ thường, không cần chuyển về lowercase
             const loadingTask = pdfjsLib.getDocument(pdfPath);
             const pdf = await loadingTask.promise;
             let results = '';
@@ -65,10 +65,11 @@
             for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                 const page = await pdf.getPage(pageNum);
                 const textContent = await page.getTextContent();
-                const pageText = textContent.items.map(item => item.str).join(' ').toLowerCase();
+                const pageText = textContent.items.map(item => item.str).join(' ');
 
+                // Tìm kiếm chính xác cụm từ nhập vào
                 if (pageText.includes(searchTerm)) {
-                    results += `<p>Found on page ${pageNum}: ${pageText.substring(0, 100)}...</p>`;
+                    results += `<p>Found on page ${pageNum}: ${highlightText(pageText, searchTerm)}</p>`;
                 }
             }
 
@@ -78,6 +79,12 @@
 
             // Hiển thị kết quả tìm kiếm
             document.getElementById('results').innerHTML = results || '<p>No results found</p>';
+        }
+
+        // Hàm để làm nổi bật cụm từ tìm thấy
+        function highlightText(text, term) {
+            const regex = new RegExp(`(${term})`, 'gi'); // Tạo regex để tìm cụm từ
+            return text.replace(regex, "<mark>$1</mark>"); // Bôi đậm từ khóa tìm được
         }
     </script>
 </body>
