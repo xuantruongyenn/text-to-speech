@@ -1,86 +1,38 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tìm kiếm nội dung trong PDF</title>
-    <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        input, button {
-            padding: 10px;
-            margin: 10px;
-            font-size: 16px;
-        }
-    </style>
+    <title>Search in PDF</title>
+    <!-- Sử dụng CDN để tải pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.min.js"></script>
 </head>
 <body>
-    <h2>Tìm kiếm từ khóa trong PDF</h2>
-    <input type="text" id="searchTerm" placeholder="Nhập từ khóa cần tìm...">
-    <button onclick="searchPDF()">Tìm kiếm</button>
-    
-    <div id="result"></div>
+    <h1>Search in PDF</h1>
+    <input type="text" id="searchTerm" placeholder="Enter search term">
+    <button onclick="searchPDF()">Search</button>
+    <div id="results"></div>
 
     <script>
-        var pdfDoc = null;
-        var isFileLoaded = false;  // Kiểm tra file PDF có được tải hay chưa
+        const pdfPath = './a.pdf'; // Đường dẫn tới file a.pdf
 
-        // Tự động lấy nội dung từ file a.pdf
-        window.onload = function() {
-            var url = './a.pdf';  // Đường dẫn tới file a.pdf (trong cùng thư mục với file HTML)
-            pdfjsLib.getDocument(url).promise.then(function(pdf) {
-                pdfDoc = pdf;
-                isFileLoaded = true;  // Đánh dấu file đã được tải
-                alert("Đã tải thành công file 'a.pdf'. Bạn có thể tìm kiếm từ khóa.");
-            }).catch(function(error) {
-                alert("Không thể tải file PDF: " + error.message);
-            });
-        };
+        async function searchPDF() {
+            const searchTerm = document.getElementById('searchTerm').value.toLowerCase();
+            const loadingTask = pdfjsLib.getDocument(pdfPath);
+            const pdf = await loadingTask.promise;
+            let results = '';
 
-        // Tìm kiếm từ khóa trong PDF
-        function searchPDF() {
-            var searchTerm = document.getElementById('searchTerm').value.trim();
-            var resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = "";
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(' ').toLowerCase();
 
-            if (!isFileLoaded) {  // Kiểm tra nếu file chưa được tải
-                alert("File PDF chưa được tải. Vui lòng thử lại.");
-                return;
+                if (pageText.includes(searchTerm)) {
+                    results += `<p>Found on page ${pageNum}: ${pageText.substring(0, 100)}...</p>`;
+                }
             }
 
-            if (!searchTerm) {  // Kiểm tra nếu từ khóa chưa được nhập
-                alert("Vui lòng nhập từ khóa cần tìm.");
-                return;
-            }
-
-            var totalPage = pdfDoc.numPages;
-            var matches = [];
-
-            // Đọc từng trang và tìm kiếm từ khóa
-            for (let i = 1; i <= totalPage; i++) {
-                pdfDoc.getPage(i).then(function(page) {
-                    page.getTextContent().then(function(textContent) {
-                        var pageText = textContent.items.map(function(item) {
-                            return item.str;
-                        }).join(" ");
-                        
-                        if (pageText.toLowerCase().includes(searchTerm.toLowerCase())) {
-                            matches.push(`Từ khóa tìm thấy tại trang ${i}`);
-                        }
-
-                        if (i === totalPage) {
-                            if (matches.length > 0) {
-                                resultDiv.innerHTML = matches.join('<br>');
-                            } else {
-                                resultDiv.innerHTML = "Không tìm thấy từ khóa.";
-                            }
-                        }
-                    });
-                });
-            }
+            document.getElementById('results').innerHTML = results || '<p>No results found</p>';
         }
     </script>
 </body>
